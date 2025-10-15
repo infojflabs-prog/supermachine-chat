@@ -10,7 +10,7 @@ interface Message {
   timestamp: number;
 }
 
-// Simple Atlas knowledge mock (can be replaced by real Atlas source)
+// Atlas knowledge base - expanded to 8 cards
 const mockAtlasCards = [
   {
     id: 'ai-healthcare',
@@ -32,6 +32,41 @@ const mockAtlasCards = [
     content:
       'Apps en platformen voor psychologische ondersteuning, mindfulness en therapie. Bereikt nieuwe doelgroepen en vermindert drempels voor zorg.',
     tags: ['mentaal', 'gezondheid', 'apps', 'tech', 'zorg']
+  },
+  {
+    id: 'blockchain-health',
+    title: 'Blockchain in Gezondheidszorg',
+    content:
+      'Veilige, gedecentraliseerde opslag van medische data. Patiënten hebben controle over hun eigen gezondheidsinformatie en kunnen deze veilig delen.',
+    tags: ['blockchain', 'data', 'veiligheid', 'zorg', 'tech']
+  },
+  {
+    id: 'sustainable-energy',
+    title: 'Duurzame Energie',
+    content:
+      'Zonne-energie, windenergie en groene waterstof voor een CO2-vrije toekomst. Smart grids en energieopslag voor betrouwbare duurzame stroom.',
+    tags: ['energie', 'duurzaam', 'zon', 'wind', 'klimaat', 'tech']
+  },
+  {
+    id: 'circular-economy',
+    title: 'Circulaire Economie',
+    content:
+      'Zero-waste systemen waar afval niet bestaat en alles wordt hergebruikt. Van lineaire consumptie naar circulaire ecosystemen.',
+    tags: ['circulair', 'economie', 'duurzaam', 'recycling', 'innovatie']
+  },
+  {
+    id: 'fintech-innovation',
+    title: 'Fintech Innovatie',
+    content:
+      'Blockchain, digitale euro, slimme contracten en AI-gestuurde investeringen. Democratisering van financiële diensten.',
+    tags: ['fintech', 'blockchain', 'AI', 'banken', 'digitale valuta']
+  },
+  {
+    id: 'smart-cities',
+    title: 'Smart Cities',
+    content:
+      'IoT-sensoren, data-analyse en AI voor slimme stedelijke planning. Verkeersmanagement, energie-efficiëntie en digitale burgerdiensten.',
+    tags: ['smart', 'cities', 'IoT', 'data', 'AI', 'urban']
   }
 ];
 
