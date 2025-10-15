@@ -10,6 +10,65 @@ interface Message {
   timestamp: number;
 }
 
+interface AtlasCard {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+}
+
+// Atlas knowledge base - UITGEBREID naar 8 kaarten
+const atlasCards: AtlasCard[] = [
+  {
+    id: 'ai-healthcare',
+    title: 'AI in Gezondheidszorg',
+    content: 'Kunstmatige intelligentie voor medische diagnostiek, behandeling en patiëntenzorg. Machine learning modellen kunnen ziekten eerder detecteren en persoonlijke behandelplannen maken.',
+    tags: ['AI', 'gezondheidszorg', 'diagnostiek', 'tech', 'innovatie']
+  },
+  {
+    id: 'quantum-computing', 
+    title: 'Quantum Computing',
+    content: 'Revolutionaire rekenkracht gebaseerd op quantum mechanica. Kan complexe problemen oplossen die onmogelijk zijn voor klassieke computers, zoals medicijnontwikkeling en klimaatmodellen.',
+    tags: ['quantum', 'computing', 'tech', 'innovatie', 'research']
+  },
+  {
+    id: 'mental-health-tech',
+    title: 'Digitale Mentale Gezondheid',
+    content: 'Apps en platformen voor psychologische ondersteuning, mindfulness en therapie. Bereikt nieuwe doelgroepen en vermindert drempels voor zorg.',
+    tags: ['mentaal', 'gezondheid', 'apps', 'tech', 'zorg']
+  },
+  {
+    id: 'blockchain-health',
+    title: 'Blockchain in Gezondheidszorg', 
+    content: 'Veilige, gedecentraliseerde opslag van medische data. Patiënten hebben controle over hun eigen gezondheidsinformatie en kunnen deze veilig delen.',
+    tags: ['blockchain', 'data', 'veiligheid', 'zorg', 'tech']
+  },
+  {
+    id: 'sustainable-energy',
+    title: 'Duurzame Energie',
+    content: 'Zonne-energie, windenergie en groene waterstof voor een CO2-vrije toekomst. Smart grids en energieopslag voor betrouwbare duurzame stroom.',
+    tags: ['energie', 'duurzaam', 'zon', 'wind', 'klimaat', 'tech']
+  },
+  {
+    id: 'circular-economy',
+    title: 'Circulaire Economie',
+    content: 'Zero-waste systemen waar afval niet bestaat en alles wordt hergebruikt. Van lineaire consumptie naar circulaire ecosystemen.',
+    tags: ['circulair', 'economie', 'duurzaam', 'recycling', 'innovatie']
+  },
+  {
+    id: 'fintech-innovation',
+    title: 'Fintech Innovatie',
+    content: 'Blockchain, digitale euro, slimme contracten en AI-gestuurde investeringen. Democratisering van financiële diensten.',
+    tags: ['fintech', 'blockchain', 'AI', 'banken', 'digitale valuta']
+  },
+  {
+    id: 'smart-cities',
+    title: 'Smart Cities',
+    content: 'IoT-sensoren, data-analyse en AI voor slimme stedelijke planning. Verkeersmanagement, energie-efficiëntie en digitale burgerdiensten.',
+    tags: ['smart', 'cities', 'IoT', 'data', 'AI', 'urban']
+  }
+];
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -169,20 +228,30 @@ export default function ChatInterface() {
                 Stel een vraag of start een gesprek. Ik help je graag met alles wat je nodig hebt.
               </p>
               
-              {/* Quick Start Suggestions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                {[
-                  "Leg quantum computing uit in eenvoudige taal",
-                  "Hoe maak ik een React component?",
-                  "Schrijf een korte gedicht over technologie",
-                  "Wat zijn de voordelen van AI?"
-                ].map((suggestion, index) => (
+              {/* Atlas Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mt-6">
+                {atlasCards.map((card) => (
                   <button
-                    key={index}
-                    onClick={() => setInput(suggestion)}
-                    className="p-4 text-left rounded-xl bg-slate-800/30 border border-slate-700/30 hover:bg-slate-800/50 hover:border-slate-600/50 transition-all text-slate-300 hover:text-slate-100"
+                    key={card.id}
+                    onClick={() => setInput(`Vertel meer over: ${card.title}`)}
+                    className="group p-5 text-left rounded-2xl bg-slate-800/30 border border-slate-700/30 hover:bg-slate-800/60 hover:border-slate-600/60 transition-all text-slate-200 hover:text-slate-100 shadow-sm hover:shadow-md hover:shadow-emerald-500/10"
                   >
-                    {suggestion}
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-slate-100 group-hover:text-white">
+                        {card.title}
+                      </h3>
+                      <span className="text-xs px-2 py-1 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">Atlas</span>
+                    </div>
+                    <p className="text-slate-400 text-sm leading-relaxed mb-3">
+                      {card.content}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {card.tags.slice(0, 4).map((tag) => (
+                        <span key={tag} className="text-xs px-2 py-1 rounded-md bg-slate-900/60 border border-slate-700/50 text-slate-400">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </button>
                 ))}
               </div>
