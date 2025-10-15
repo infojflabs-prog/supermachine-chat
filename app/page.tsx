@@ -50,17 +50,46 @@ export default function ChatInterface() {
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load messages from sessionStorage on component mount
+  // Load messages from sessionStorage on component mount; upgrade to Atlas v2 schema
   useEffect(() => {
-    const savedMessages = sessionStorage.getItem('chatMessages');
+    const STORAGE_KEY = 'chatMessages';
+    const STORAGE_VERSION_KEY = 'chatMessagesVersion';
+    const CURRENT_VERSION = 'atlas-v2';
+
+    const currentVersion = sessionStorage.getItem(STORAGE_VERSION_KEY);
+    const savedMessages = sessionStorage.getItem(STORAGE_KEY);
+
+    // Purge old demo cache if version mismatch or demo text detected
+    const shouldReset =
+      currentVersion !== CURRENT_VERSION ||
+      (savedMessages && savedMessages.includes('Dit is een demo')) ||
+      (savedMessages && savedMessages.includes('Ik heb je bericht ontvangen'));
+
+    if (shouldReset) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+      setMessages([]);
+      return;
+    }
+
     if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
+      try {
+        setMessages(JSON.parse(savedMessages));
+      } catch {
+        // If parsing fails, reset cache
+        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+        setMessages([]);
+      }
+    } else {
+      sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
     }
   }, []);
 
-  // Save messages to sessionStorage whenever messages change
+  // Save messages to sessionStorage whenever messages change with version tag
   useEffect(() => {
     sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+    sessionStorage.setItem('chatMessagesVersion', 'atlas-v2');
   }, [messages]);
 
   // Auto-scroll to bottom when new messages are added
@@ -216,7 +245,7 @@ export default function ChatInterface() {
                 <Bot className="w-10 h-10 text-emerald-400" />
               </div>
               <h2 className="text-2xl font-bold text-slate-100 mb-3">
-                Welkom bij Supermachine Chat
+                Welkom bij Atlas Supermachine Chat
               </h2>
               <p className="text-slate-400 mb-8 max-w-md mx-auto">
                 Stel vragen over AI, quantum computing, gezondheidszorg en meer. Ik gebruik de Atlas kennisbank!
