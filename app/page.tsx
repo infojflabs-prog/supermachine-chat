@@ -53,35 +53,73 @@ export default function ChatInterface() {
   const streamResponse = async (userMessage: string) => {
     setIsStreaming(true);
     const assistantId = (Date.now() + 1).toString();
-    
+
     // Add empty assistant message
-    setMessages(prev => [...prev, {
-      id: assistantId,
-      role: 'assistant',
-      content: '',
-      timestamp: Date.now()
-    }]);
+    setMessages(prev => [
+      ...prev,
+      {
+        id: assistantId,
+        role: 'assistant',
+        content: '',
+        timestamp: Date.now()
+      }
+    ]);
 
     try {
-      // Simulate streaming response (replace with actual AI API)
-      const responseText = `Ik heb je bericht ontvangen: "${userMessage}". Dit is een demo van de streaming functionaliteit. In een echte implementatie zou hier AI-generated content komen van OpenAI, Claude, of een ander model.`;
-      
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage })
+      });
+
+      if (!res.ok) {
+        throw new Error('API error');
+      }
+
+      const data = await res.json();
+      const { matches = [], synergies = [], ai } = data || {};
+
+      const lines: string[] = [];
+      if (ai && ai.trim()) {
+        lines.push(ai.trim());
+        lines.push('\n—');
+      }
+
+      if (matches.length > 0) {
+        lines.push('Relevante kaarten:');
+        for (const m of matches.slice(0, 5)) {
+          lines.push(`• ${m.title}${m.tags?.length ? ` [${m.tags.join(', ')}]` : ''}`);
+        }
+      } else {
+        lines.push('Geen directe matches gevonden in je Atlas.');
+      }
+
+      if (synergies.length > 0) {
+        lines.push('\nMogelijke synergieën:');
+        for (const s of synergies.slice(0, 3)) {
+          lines.push(`• ${s.a.title} ↔ ${s.b.title} — ${s.rationale}`);
+        }
+      }
+
+      const responseText = lines.join('\n');
+
+      // Type-out effect for consistency with existing UI
       let accumulatedText = '';
       for (let i = 0; i < responseText.length; i++) {
         accumulatedText += responseText[i];
-        setMessages(prev => prev.map(msg => 
-          msg.id === assistantId 
-            ? { ...msg, content: accumulatedText }
-            : msg
-        ));
-        await new Promise(resolve => setTimeout(resolve, 20)); // Simulate typing speed
+        setMessages(prev =>
+          prev.map(msg => (msg.id === assistantId ? { ...msg, content: accumulatedText } : msg))
+        );
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
     } catch (error) {
-      setMessages(prev => prev.map(msg => 
-        msg.id === assistantId 
-          ? { ...msg, content: 'Sorry, er ging iets mis. Probeer het opnieuw.' }
-          : msg
-      ));
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === assistantId
+            ? { ...msg, content: 'Sorry, er ging iets mis. Probeer het opnieuw.' }
+            : msg
+        )
+      );
     }
 
     setIsStreaming(false);
