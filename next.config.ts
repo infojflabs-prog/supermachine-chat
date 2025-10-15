@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  // Explicitly set the workspace root to silence multi-lockfile warnings
+  outputFileTracingRoot: path.resolve(__dirname),
   // Enable gzip compression for all responses (default in Next, explicit here)
   compress: true,
 
