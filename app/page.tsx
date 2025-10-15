@@ -10,6 +10,40 @@ interface Message {
   timestamp: number;
 }
 
+// Simple Atlas knowledge mock (can be replaced by real Atlas source)
+const mockAtlasCards = [
+  {
+    id: 'ai-healthcare',
+    title: 'AI in Gezondheidszorg',
+    content:
+      'Kunstmatige intelligentie voor medische diagnostiek, behandeling en patiëntenzorg. Machine learning modellen kunnen ziekten eerder detecteren en persoonlijke behandelplannen maken.',
+    tags: ['AI', 'gezondheidszorg', 'diagnostiek', 'tech', 'innovatie']
+  },
+  {
+    id: 'quantum-computing',
+    title: 'Quantum Computing',
+    content:
+      'Revolutionaire rekenkracht gebaseerd op quantum mechanica. Kan complexe problemen oplossen die onmogelijk zijn voor klassieke computers, zoals medicijnontwikkeling en klimaatmodellen.',
+    tags: ['quantum', 'computing', 'tech', 'innovatie', 'research']
+  },
+  {
+    id: 'mental-health-tech',
+    title: 'Digitale Mentale Gezondheid',
+    content:
+      'Apps en platformen voor psychologische ondersteuning, mindfulness en therapie. Bereikt nieuwe doelgroepen en vermindert drempels voor zorg.',
+    tags: ['mentaal', 'gezondheid', 'apps', 'tech', 'zorg']
+  }
+];
+
+function findRelevantCards(query: string) {
+  const queryLower = query.toLowerCase();
+  return mockAtlasCards.filter(card =>
+    card.title.toLowerCase().includes(queryLower) ||
+    card.content.toLowerCase().includes(queryLower) ||
+    card.tags.some(tag => tag.toLowerCase().includes(queryLower))
+  );
+}
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -63,8 +97,27 @@ export default function ChatInterface() {
     }]);
 
     try {
-      // Simulate streaming response (replace with actual AI API)
-      const responseText = `Ik heb je bericht ontvangen: "${userMessage}". Dit is een demo van de streaming functionaliteit. In een echte implementatie zou hier AI-generated content komen van OpenAI, Claude, of een ander model.`;
+      // Use Atlas knowledge
+      const relevantCards = findRelevantCards(userMessage);
+
+      let responseText = '';
+      if (relevantCards.length > 0) {
+        responseText += '🔍 Atlas Kennis Gevonden!\n\n';
+        responseText += `Ik heb ${relevantCards.length} relevante concepten gevonden voor "${userMessage}":\n\n`;
+
+        relevantCards.forEach(card => {
+          responseText += `• ${card.title}\n`;
+          responseText += `${card.content}\n`;
+          responseText += `🏷️ Tags: ${card.tags.join(', ')}\n\n`;
+        });
+
+        if (relevantCards.length >= 2) {
+          responseText += `💡 Synergie: De combinatie van ${relevantCards[0].title} en ${relevantCards[1].title} kan tot innovatie leiden!`;
+        }
+      } else {
+        responseText += `Hallo! Je vroeg: "${userMessage}"\n\n`;
+        responseText += 'Ik heb geen directe matches in de Atlas. Probeer: "AI", "quantum", "gezondheidszorg" of "tech".';
+      }
       
       let accumulatedText = '';
       for (let i = 0; i < responseText.length; i++) {
@@ -126,8 +179,8 @@ export default function ChatInterface() {
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-100">Supermachine Chat</h1>
-                <p className="text-sm text-slate-400">AI-powered conversations</p>
+                <h1 className="text-xl font-bold text-slate-100">Atlas Supermachine Chat</h1>
+                <p className="text-sm text-slate-400">AI-powered met Atlas kennis</p>
               </div>
             </div>
             
@@ -166,16 +219,16 @@ export default function ChatInterface() {
                 Welkom bij Supermachine Chat
               </h2>
               <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                Stel een vraag of start een gesprek. Ik help je graag met alles wat je nodig hebt.
+                Stel vragen over AI, quantum computing, gezondheidszorg en meer. Ik gebruik de Atlas kennisbank!
               </p>
               
               {/* Quick Start Suggestions */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
                 {[
-                  "Leg quantum computing uit in eenvoudige taal",
-                  "Hoe maak ik een React component?",
-                  "Schrijf een korte gedicht over technologie",
-                  "Wat zijn de voordelen van AI?"
+                  'AI in gezondheidszorg',
+                  'Quantum computing',
+                  'Digitale mentale gezondheid',
+                  'Hoe gaat het?'
                 ].map((suggestion, index) => (
                   <button
                     key={index}
@@ -250,7 +303,7 @@ export default function ChatInterface() {
                     handleSubmit(e);
                   }
                 }}
-                placeholder="Typ je bericht... (Enter om te verzenden, Shift+Enter voor nieuwe regel)"
+                placeholder="Vraag iets over AI, quantum, gezondheidszorg..."
                 disabled={isStreaming}
                 rows={1}
                 className="w-full px-4 py-3 pr-12 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -281,7 +334,7 @@ export default function ChatInterface() {
           </form>
           
           <div className="text-xs text-slate-500 mt-2 text-center">
-            {isStreaming ? 'AI is aan het typen...' : 'Shift+Enter voor nieuwe regel'}
+            {isStreaming ? 'Atlas zoekt kennis...' : 'Shift+Enter voor nieuwe regel'}
           </div>
         </div>
       </div>
