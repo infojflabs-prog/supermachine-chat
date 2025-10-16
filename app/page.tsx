@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Download, Trash2, Bot, User } from 'lucide-react';
+import { searchAtlasCards } from '@/lib/atlas/cards';
 
 interface Message {
   id: string;
@@ -10,23 +11,54 @@ interface Message {
   timestamp: number;
 }
 
+// Atlas cards and search are provided by lib/atlas/cards
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load messages from sessionStorage on component mount
+  // Load messages from sessionStorage on component mount; upgrade to Atlas v2 schema
   useEffect(() => {
-    const savedMessages = sessionStorage.getItem('chatMessages');
+    const STORAGE_KEY = 'chatMessages';
+    const STORAGE_VERSION_KEY = 'chatMessagesVersion';
+    const CURRENT_VERSION = 'atlas-v2';
+
+    const currentVersion = sessionStorage.getItem(STORAGE_VERSION_KEY);
+    const savedMessages = sessionStorage.getItem(STORAGE_KEY);
+
+    // Purge old demo cache if version mismatch or demo text detected
+    const shouldReset =
+      currentVersion !== CURRENT_VERSION ||
+      (savedMessages && savedMessages.includes('Dit is een demo')) ||
+      (savedMessages && savedMessages.includes('Ik heb je bericht ontvangen'));
+
+    if (shouldReset) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+      setMessages([]);
+      return;
+    }
+
     if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
+      try {
+        setMessages(JSON.parse(savedMessages));
+      } catch {
+        // If parsing fails, reset cache
+        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+        setMessages([]);
+      }
+    } else {
+      sessionStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
     }
   }, []);
 
-  // Save messages to sessionStorage whenever messages change
+  // Save messages to sessionStorage whenever messages change with version tag
   useEffect(() => {
     sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+    sessionStorage.setItem('chatMessagesVersion', 'atlas-v2');
   }, [messages]);
 
   // Auto-scroll to bottom when new messages are added
@@ -63,8 +95,27 @@ export default function ChatInterface() {
     }]);
 
     try {
-      // Simulate streaming response (replace with actual AI API)
-      const responseText = `Ik heb je bericht ontvangen: "${userMessage}". Dit is een demo van de streaming functionaliteit. In een echte implementatie zou hier AI-generated content komen van OpenAI, Claude, of een ander model.`;
+      // Use Atlas knowledge from shared module
+      const relevantCards = searchAtlasCards(userMessage);
+
+      let responseText = '';
+      if (relevantCards.length > 0) {
+        responseText += '🔍 Atlas Kennis Gevonden!\n\n';
+        responseText += `Ik heb ${relevantCards.length} relevante concepten gevonden voor "${userMessage}":\n\n`;
+
+        relevantCards.forEach(card => {
+          responseText += `• ${card.title}\n`;
+          responseText += `${card.content}\n`;
+          responseText += `🏷️ Tags: ${card.tags.join(', ')}\n\n`;
+        });
+
+        if (relevantCards.length >= 2) {
+          responseText += `💡 Synergie: De combinatie van ${relevantCards[0].title} en ${relevantCards[1].title} kan tot innovatie leiden!`;
+        }
+      } else {
+        responseText += `Hallo! Je vroeg: "${userMessage}"\n\n`;
+        responseText += 'Ik heb geen directe matches in de Atlas. Probeer: "AI", "quantum", "gezondheidszorg" of "tech".';
+      }
       
       let accumulatedText = '';
       for (let i = 0; i < responseText.length; i++) {
@@ -126,8 +177,8 @@ export default function ChatInterface() {
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-100">Supermachine Chat</h1>
-                <p className="text-sm text-slate-400">AI-powered conversations</p>
+                <h1 className="text-xl font-bold text-slate-100">Atlas Supermachine Chat</h1>
+                <p className="text-sm text-slate-400">AI-powered met Atlas kennis</p>
               </div>
             </div>
             
@@ -163,19 +214,19 @@ export default function ChatInterface() {
                 <Bot className="w-10 h-10 text-emerald-400" />
               </div>
               <h2 className="text-2xl font-bold text-slate-100 mb-3">
-                Welkom bij Supermachine Chat
+                Welkom bij Atlas Supermachine Chat
               </h2>
               <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                Stel een vraag of start een gesprek. Ik help je graag met alles wat je nodig hebt.
+                Stel vragen over AI, quantum computing, gezondheidszorg en meer. Ik gebruik de Atlas kennisbank!
               </p>
               
               {/* Quick Start Suggestions */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
                 {[
-                  "Leg quantum computing uit in eenvoudige taal",
-                  "Hoe maak ik een React component?",
-                  "Schrijf een korte gedicht over technologie",
-                  "Wat zijn de voordelen van AI?"
+                  'AI in gezondheidszorg',
+                  'Quantum computing',
+                  'Digitale mentale gezondheid',
+                  'Hoe gaat het?'
                 ].map((suggestion, index) => (
                   <button
                     key={index}
@@ -250,7 +301,7 @@ export default function ChatInterface() {
                     handleSubmit(e);
                   }
                 }}
-                placeholder="Typ je bericht... (Enter om te verzenden, Shift+Enter voor nieuwe regel)"
+                placeholder="Vraag iets over AI, quantum, gezondheidszorg..."
                 disabled={isStreaming}
                 rows={1}
                 className="w-full px-4 py-3 pr-12 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -281,7 +332,7 @@ export default function ChatInterface() {
           </form>
           
           <div className="text-xs text-slate-500 mt-2 text-center">
-            {isStreaming ? 'AI is aan het typen...' : 'Shift+Enter voor nieuwe regel'}
+            {isStreaming ? 'Atlas zoekt kennis...' : 'Shift+Enter voor nieuwe regel'}
           </div>
         </div>
       </div>
