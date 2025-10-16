@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Business App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .container {
+            width: 100%; max-width: 1400px; height: 90vh;
+            background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; overflow: hidden;
+        }
+        .sidebar {
+            width: 300px; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 25px; display: flex; flex-direction: column; gap: 15px;
+        }
+        .logo { 
+            font-size: 28px; font-weight: bold; margin-bottom: 20px; 
+            text-align: center; padding: 15px; background: rgba(255,255,255,0.1);
+            border-radius: 15px; backdrop-filter: blur(10px);
+        }
+        .menu-btn {
+            background: rgba(255,255,255,0.15); border: none; color: white; padding: 15px 20px;
+            border-radius: 12px; cursor: pointer; text-align: left; transition: all 0.3s; width: 100%;
+            font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 12px;
+        }
+        .menu-btn:hover { 
+            background: rgba(255,255,255,0.25); 
+            transform: translateX(8px); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .menu-btn.active { 
+            background: white; color: #667eea; font-weight: 600; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .header { 
+            background: white; border-bottom: 1px solid #e0e0e0; padding: 25px 35px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header-title { font-size: 24px; font-weight: 600; color: #333; }
+        .user-info { 
+            display: flex; align-items: center; gap: 10px; 
+            color: #666; font-size: 14px;
+        }
+        .content { flex: 1; padding: 35px; overflow-y: auto; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Chat Styles */
+        .chat-container { display: flex; flex-direction: column; height: 100%; max-width: 900px; }
+        .messages { 
+            flex: 1; overflow-y: auto; margin-bottom: 25px; 
+            display: flex; flex-direction: column; gap: 15px; padding: 10px;
+        }
+        .message { 
+            padding: 15px 20px; border-radius: 15px; max-width: 75%; 
+            word-wrap: break-word; position: relative;
+        }
+        .message.user { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; align-self: flex-end; margin-left: auto;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .message.system { 
+            background: #f8f9fa; color: #333; border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .message-time {
+            font-size: 11px; opacity: 0.7; margin-top: 5px;
+        }
+        .input-area { 
+            display: flex; gap: 15px; padding: 20px; 
+            background: #f8f9fa; border-radius: 15px; border: 2px solid #e9ecef;
+        }
+        .input-area input { 
+            flex: 1; padding: 15px 20px; border: 2px solid #e0e0e0; 
+            border-radius: 12px; font-size: 16px; outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-area input:focus { border-color: #667eea; }
+        .input-area button { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; border: none; padding: 15px 30px; 
+            border-radius: 12px; cursor: pointer; font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .input-area button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px; margin-bottom: 30px;
+        }
+        .card {
+            background: white; border-radius: 15px; padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 1px solid #e9ecef;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .card-title { 
+            font-size: 18px; font-weight: 600; margin-bottom: 15px; 
+            color: #333; display: flex; align-items: center; gap: 10px;
+        }
+        .stat-number { 
+            font-size: 32px; font-weight: bold; color: #667eea; 
+            margin-bottom: 5px;
+        }
+        .stat-label { color: #666; font-size: 14px; }
+        
+        /* AI Assistant Styles */
+        .ai-container { max-width: 800px; }
+        .ai-prompt { 
+            background: #f8f9fa; border-radius: 15px; padding: 25px; 
+            margin-bottom: 25px; border-left: 4px solid #667eea;
+        }
+        .ai-response { 
+            background: white; border-radius: 15px; padding: 25px;
+            border: 1px solid #e9ecef; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* Files Styles */
+        .file-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .file-item {
+            background: white; border-radius: 12px; padding: 20px;
+            text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s; cursor: pointer;
+        }
+        .file-item:hover { transform: translateY(-3px); }
+        .file-icon { font-size: 48px; margin-bottom: 10px; }
+        .file-name { font-weight: 600; color: #333; margin-bottom: 5px; }
+        .file-size { color: #666; font-size: 12px; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; height: 100vh; }
+            .sidebar { width: 100%; height: auto; }
+            .main-content { height: calc(100vh - 200px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">🏢 UltimateBusiness</div>
+            <button class="menu-btn active" onclick="switchTab('dashboard')">
+                📊 Dashboard
+            </button>
+            <button class="menu-btn" onclick="switchTab('chat')">
+                💬 Team Chat
+            </button>
+            <button class="menu-btn" onclick="switchTab('calls')">
+                📞 Video Calls
+            </button>
+            <button class="menu-btn" onclick="switchTab('ai')">
+                🤖 AI Assistant
+            </button>
+            <button class="menu-btn" onclick="switchTab('files')">
+                📎 File Sharing
+            </button>
+            <button class="menu-btn" onclick="switchTab('analytics')">
+                📈 Analytics
+            </button>
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title" id="headerTitle">📊 Dashboard</div>
+                <div class="user-info">
+                    👤 Whitney Ravenberg | 🟢 Online
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-title">💰 Revenue</div>
+                            <div class="stat-number">€125,430</div>
+                            <div class="stat-label">+12% deze maand</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">👥 Active Users</div>
+                            <div class="stat-number">2,847</div>
+                            <div class="stat-label">+8% deze week</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">📧 Messages</div>
+                            <div class="stat-number">1,234</div>
+                            <div class="stat-label">+23% vandaag</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">🎯 Conversion</div>
+                            <div class="stat-number">3.2%</div>
+                            <div class="stat-label">+0.5% deze maand</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📈 Recent Activity</div>
+                        <p>• Nieuwe klant: Acme Corp (€5,000 contract)</p>
+                        <p>• Team meeting voltooid: Q4 Planning</p>
+                        <p>• 15 nieuwe leads deze week</p>
+                        <p>• Product update live: v2.1.3</p>
+                    </div>
+                </div>
+                
+                <!-- Chat Tab -->
+                <div id="chat" class="tab-content">
+                    <div class="chat-container">
+                        <div class="messages" id="messages">
+                            <div class="message system">
+                                🚀 Welkom bij Ultimate Business App!<br>
+                                <span class="message-time">Vandaag 14:30</span>
+                            </div>
+                            <div class="message system">
+                                💡 Tip: Gebruik de AI Assistant voor snelle antwoorden op business vragen!
+                                <span class="message-time">Vandaag 14:31</span>
+                            </div>
+                        </div>
+                        <div class="input-area">
+                            <input type="text" id="messageInput" placeholder="Typ je bericht..." onkeypress="if(event.key=='Enter') sendMessage()">
+                            <button onclick="sendMessage()">Verstuur</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calls Tab -->
+                <div id="calls" class="tab-content">
+                    <div class="card">
+                        <div class="card-title">📞 Professional Video Calls</div>
+                        <p>✅ Geen popups of advertenties</p>
+                        <p>✅ HD kwaliteit video en audio</p>
+                        <p>✅ Screen sharing mogelijk</p>
+                        <p>✅ Opname functionaliteit</p>
+                        <p>✅ Tot 50 deelnemers</p>
+                        <br>
+                        <button class="menu-btn" style="background: #28a745; color: white; text-align: center;">
+                            🎥 Start Nieuwe Meeting
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- AI Tab -->
+                <div id="ai" class="tab-content">
+                    <div class="ai-container">
+                        <div class="ai-prompt">
+                            <h3>🤖 AI Business Assistant</h3>
+                            <p>Stel vragen over strategie, marketing, financiën, of andere business onderwerpen.</p>
+                        </div>
+                        <div class="ai-response">
+                            <h4>💡 Voorbeeld vragen:</h4>
+                            <ul>
+                                <li>"Hoe kan ik mijn conversie rate verbeteren?"</li>
+                                <li>"Wat zijn de beste marketing strategieën voor Q4?"</li>
+                                <li>"Hoe bereken ik mijn ROI voor social media?"</li>
+                                <li>"Wat zijn trends in mijn industrie?"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Files Tab -->
+                <div id="files" class="tab-content">
+                    <div class="file-grid">
+                        <div class="file-item">
+                            <div class="file-icon">📊</div>
+                            <div class="file-name">Q4_Report.pdf</div>
+                            <div class="file-size">2.3 MB</div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon">📋</div>
+                            <div class="file-name">Meeting_Notes.docx</div>
+                            <div class="file-size">156 KB</div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon">📈</div>
+                            <div class="file-name">Analytics.xlsx</div>
+                            <div class="file-size">892 KB</div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon">🎨</div>
+                            <div class="file-name">Design_Mockup.png</div>
+                            <div class="file-size">1.2 MB</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Tab -->
+                <div id="analytics" class="tab-content">
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-title">📊 Website Traffic</div>
+                            <div class="stat-number">45,678</div>
+                            <div class="stat-label">Unieke bezoekers deze maand</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">📱 Mobile Usage</div>
+                            <div class="stat-number">68%</div>
+                            <div class="stat-label">Van alle bezoekers</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">⏱️ Avg. Session</div>
+                            <div class="stat-number">4m 32s</div>
+                            <div class="stat-label">Gemiddelde sessie tijd</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">🔄 Bounce Rate</div>
+                            <div class="stat-number">23%</div>
+                            <div class="stat-label">Lager dan industrie gemiddelde</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Remove active class from all tabs and buttons
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
+            
+            // Add active class to selected tab and button
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Update header title
+            const titles = {
+                'dashboard': '📊 Dashboard',
+                'chat': '💬 Team Chat',
+                'calls': '📞 Video Calls',
+                'ai': '🤖 AI Assistant',
+                'files': '📎 File Sharing',
+                'analytics': '📈 Analytics'
+            };
+            document.getElementById('headerTitle').textContent = titles[tab];
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (text) {
+                const messagesDiv = document.getElementById('messages');
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message user';
+                messageEl.innerHTML = text + '<br><span class="message-time">' + new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'}) + '</span>';
+                messagesDiv.appendChild(messageEl);
+                input.value = '';
+                
+                // Auto-scroll to bottom
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                
+                // Simulate system response
+                setTimeout(() => {
+                    const responseEl = document.createElement('div');
+                    responseEl.className = 'message system';
+                    responseEl.innerHTML = '✅ Bericht ontvangen! Ik help je graag verder.<br><span class="message-time">' + new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'}) + '</span>';
+                    messagesDiv.appendChild(responseEl);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }, 1000);
+            }
+        }
+
+        // Add some sample data animation
+        setInterval(() => {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(stat => {
+                if (stat.textContent.includes('€')) {
+                    const current = parseInt(stat.textContent.replace(/[€,]/g, ''));
+                    const newVal = current + Math.floor(Math.random() * 100);
+                    stat.textContent = '€' + newVal.toLocaleString();
+                }
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
