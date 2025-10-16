@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Download, Trash2, User, Heart, Zap } from 'lucide-react';
+import { Send, Download, Trash2, User, Heart, Zap, Sparkles } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -372,6 +372,7 @@ export default function ChatInterface() {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [conciseMode, setConciseMode] = useState(true);
+  const [aiMode, setAiMode] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -423,7 +424,36 @@ export default function ChatInterface() {
     }]);
 
     try {
-      const responseText = generateResponseText(userMessage, conciseMode ? 'concise' : 'normal');
+      let responseText = '';
+
+      if (aiMode) {
+        // Build conversation history including current user message
+        const history = [
+          ...messages.map(m => ({ role: m.role, content: m.content })),
+          { role: 'user' as const, content: userMessage },
+        ];
+
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: history }),
+          });
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            throw new Error(errJson.error || `HTTP ${res.status}`);
+          }
+          const data = await res.json();
+          responseText = typeof data.content === 'string' && data.content.trim().length > 0
+            ? data.content.trim()
+            : 'Er kwam geen antwoord terug van de AI.';
+        } catch (apiErr: any) {
+          responseText = 'AI is niet beschikbaar. Controleer je OPENAI_API_KEY en probeer opnieuw.';
+        }
+      } else {
+        responseText = generateResponseText(userMessage, conciseMode ? 'concise' : 'normal');
+      }
+
       // STREAM CHARACTER BY CHARACTER (sneller in korte modus)
       for (let i = 0; i < responseText.length; i++) {
         const char = responseText[i];
@@ -490,6 +520,19 @@ export default function ChatInterface() {
             </div>
             
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAiMode(v => !v)}
+                aria-pressed={aiMode}
+                className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg border transition-colors ${
+                  aiMode
+                    ? 'text-emerald-300 border-emerald-600/40 bg-emerald-900/20'
+                    : 'text-slate-400 border-slate-700/50 hover:text-slate-300 hover:border-emerald-600/40'
+                }`}
+                title="Schakel AI (OpenAI) in/uit"
+              >
+                <Sparkles className="w-4 h-4" />
+                {aiMode ? 'AI aan' : 'AI uit'}
+              </button>
               <button
                 onClick={() => setConciseMode(v => !v)}
                 aria-pressed={conciseMode}
