@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Business App - Chat, Calls, AI, Files</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .container {
+            width: 100%; max-width: 1400px; height: 90vh;
+            background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; overflow: hidden;
+        }
+        .sidebar {
+            width: 300px; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 25px; display: flex; flex-direction: column; gap: 15px;
+        }
+        .logo { 
+            font-size: 28px; font-weight: bold; margin-bottom: 20px; 
+            text-align: center; padding: 15px; background: rgba(255,255,255,0.1);
+            border-radius: 15px; backdrop-filter: blur(10px);
+        }
+        .menu-btn {
+            background: rgba(255,255,255,0.15); border: none; color: white; padding: 15px 20px;
+            border-radius: 12px; cursor: pointer; text-align: left; transition: all 0.3s; width: 100%;
+            font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 12px;
+        }
+        .menu-btn:hover { 
+            background: rgba(255,255,255,0.25); 
+            transform: translateX(8px); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .menu-btn.active { 
+            background: white; color: #667eea; font-weight: 600; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .header { 
+            background: white; border-bottom: 1px solid #e0e0e0; padding: 25px 35px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header-title { font-size: 24px; font-weight: 600; color: #333; }
+        .user-info { 
+            display: flex; align-items: center; gap: 10px; 
+            color: #666; font-size: 14px;
+        }
+        .content { flex: 1; padding: 35px; overflow-y: auto; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Chat Styles */
+        .chat-container { display: flex; flex-direction: column; height: 100%; max-width: 900px; }
+        .messages { 
+            flex: 1; overflow-y: auto; margin-bottom: 25px; 
+            display: flex; flex-direction: column; gap: 15px; padding: 10px;
+            border: 1px solid #e0e0e0; border-radius: 12px; background: #f8f9fa;
+            max-height: 400px;
+        }
+        .message { 
+            padding: 15px 20px; border-radius: 15px; max-width: 75%; 
+            word-wrap: break-word; position: relative;
+        }
+        .message.user { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; align-self: flex-end; margin-left: auto;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .message.system { 
+            background: white; color: #333; border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .message.ai { 
+            background: #e8f5e9; color: #333; border-left: 4px solid #4caf50;
+        }
+        .message-time {
+            font-size: 11px; opacity: 0.7; margin-top: 5px;
+        }
+        .input-area { 
+            display: flex; gap: 15px; padding: 20px; 
+            background: #f8f9fa; border-radius: 15px; border: 2px solid #e9ecef;
+        }
+        .input-area input { 
+            flex: 1; padding: 15px 20px; border: 2px solid #e0e0e0; 
+            border-radius: 12px; font-size: 16px; outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-area input:focus { border-color: #667eea; }
+        .input-area button { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; border: none; padding: 15px 30px; 
+            border-radius: 12px; cursor: pointer; font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .input-area button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px; margin-bottom: 30px;
+        }
+        .card {
+            background: white; border-radius: 15px; padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 1px solid #e9ecef;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .card-title { 
+            font-size: 18px; font-weight: 600; margin-bottom: 15px; 
+            color: #333; display: flex; align-items: center; gap: 10px;
+        }
+        .stat-number { 
+            font-size: 32px; font-weight: bold; color: #667eea; 
+            margin-bottom: 5px;
+        }
+        .stat-label { color: #666; font-size: 14px; }
+        
+        /* AI Assistant Styles */
+        .ai-container { max-width: 800px; }
+        .ai-prompt { 
+            background: #f8f9fa; border-radius: 15px; padding: 25px; 
+            margin-bottom: 25px; border-left: 4px solid #667eea;
+        }
+        .ai-input-area {
+            display: flex; gap: 10px; margin: 20px 0;
+        }
+        .ai-input-area textarea {
+            flex: 1; padding: 15px; border: 2px solid #e0e0e0; 
+            border-radius: 12px; font-size: 14px; font-family: inherit;
+            resize: vertical; min-height: 100px;
+        }
+        .ai-input-area button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; border: none; padding: 15px 30px;
+            border-radius: 12px; cursor: pointer; font-weight: 600;
+        }
+        .ai-response { 
+            background: white; border-radius: 15px; padding: 25px;
+            border: 1px solid #e9ecef; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            line-height: 1.6;
+        }
+        
+        /* Files Styles */
+        .file-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .file-item {
+            background: white; border-radius: 12px; padding: 20px;
+            text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s; cursor: pointer;
+            border: 1px solid #e9ecef;
+        }
+        .file-item:hover { transform: translateY(-3px); }
+        .file-icon { font-size: 48px; margin-bottom: 10px; }
+        .file-name { font-weight: 600; color: #333; margin-bottom: 5px; }
+        .file-size { color: #666; font-size: 12px; margin-bottom: 10px; }
+        .file-btn {
+            background: #667eea; color: white; border: none; 
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px;
+        }
+        
+        /* Calls Tab */
+        .calls-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .call-card {
+            background: white; border-radius: 15px; padding: 30px;
+            text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+        .call-icon { font-size: 48px; margin-bottom: 15px; }
+        .call-card h3 { font-size: 18px; margin-bottom: 8px; }
+        .call-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; height: 100vh; }
+            .sidebar { width: 100%; height: auto; }
+            .main-content { height: calc(100vh - 200px); }
+        }
+
+        .active-status {
+            display: inline-block; width: 8px; height: 8px; background: #4caf50; border-radius: 50%; margin-left: 5px;
+        }
+
+        /* Animation for messages */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message { animation: slideIn 0.3s ease-out; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">🏢 UltimateBusiness</div>
+            <button class="menu-btn active" onclick="switchTab('dashboard')">
+                📊 Dashboard
+            </button>
+            <button class="menu-btn" onclick="switchTab('chat')">
+                💬 Team Chat
+            </button>
+            <button class="menu-btn" onclick="switchTab('calls')">
+                📞 Video Calls
+            </button>
+            <button class="menu-btn" onclick="switchTab('ai')">
+                🤖 AI Assistant
+            </button>
+            <button class="menu-btn" onclick="switchTab('files')">
+                📎 File Sharing
+            </button>
+            <button class="menu-btn" onclick="switchTab('analytics')">
+                📈 Analytics
+            </button>
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title" id="headerTitle">📊 Dashboard</div>
+                <div class="user-info">
+                    👤 Whitney Ravenberg <span class="active-status"></span>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-title">💰 Revenue</div>
+                            <div class="stat-number" id="revenue">€125,430</div>
+                            <div class="stat-label">+12% deze maand</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">👥 Active Users</div>
+                            <div class="stat-number" id="users">2,847</div>
+                            <div class="stat-label">+8% deze week</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">📧 Messages</div>
+                            <div class="stat-number" id="msgcount">1,234</div>
+                            <div class="stat-label">+23% vandaag</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">🎯 Conversion</div>
+                            <div class="stat-number">3.2%</div>
+                            <div class="stat-label">+0.5% deze maand</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📈 Recent Activity</div>
+                        <div id="activity">
+                            <p>• Systeem gereed</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Tab -->
+                <div id="chat" class="tab-content">
+                    <div class="chat-container">
+                        <div class="messages" id="messages">
+                            <div class="message system">
+                                🚀 Welkom bij Ultimate Business App!<br>
+                                <span class="message-time">Vandaag 14:30</span>
+                            </div>
+                        </div>
+                        <div class="input-area">
+                            <input type="text" id="messageInput" placeholder="Typ je bericht..." onkeypress="if(event.key=='Enter') sendMessage()">
+                            <button onclick="sendMessage()">Verstuur</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calls Tab -->
+                <div id="calls" class="tab-content">
+                    <div class="calls-grid">
+                        <div class="call-card">
+                            <div class="call-icon">📞</div>
+                            <h3>Audio Call</h3>
+                            <p style="margin: 10px 0; color: #666;">Snelle team calls</p>
+                            <button class="call-btn" onclick="startCall('Audio')">Start Audio</button>
+                        </div>
+                        <div class="call-card">
+                            <div class="call-icon">📹</div>
+                            <h3>Video Call</h3>
+                            <p style="margin: 10px 0; color: #666;">HD video meetings</p>
+                            <button class="call-btn" onclick="startCall('Video')">Start Video</button>
+                        </div>
+                        <div class="call-card">
+                            <div class="call-icon">🖥️</div>
+                            <h3>Screen Share</h3>
+                            <p style="margin: 10px 0; color: #666;">Deel je scherm</p>
+                            <button class="call-btn" onclick="startCall('Screen')">Share Screen</button>
+                        </div>
+                    </div>
+                    <div id="callStatus" style="display: none; margin-top: 30px;">
+                        <div class="card" style="background: #fff3cd; border: 2px solid #ffc107;">
+                            <div style="font-size: 24px; margin-bottom: 15px;">🎯 Call Actief!</div>
+                            <p id="callInfo"></p>
+                            <button class="call-btn" onclick="endCall()" style="margin-top: 15px;">Beëindig Call</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Tab -->
+                <div id="ai" class="tab-content">
+                    <div class="ai-container">
+                        <div class="ai-prompt">
+                            <h3>🤖 AI Business Assistant</h3>
+                            <p>Stel vragen over strategie, marketing, financiën, productiviteit of ander business onderwerpen.</p>
+                        </div>
+                        <div class="ai-input-area">
+                            <textarea id="aiInput" placeholder="Bijv: 'Hoe verhoog ik mijn conversie?' of 'Wat zijn beste marketing strategieën?'"></textarea>
+                            <button onclick="askAI()">Ask AI</button>
+                        </div>
+                        <div id="aiResponse" style="display: none; margin-top: 20px;">
+                            <h4 style="margin-bottom: 10px;">💡 AI Response:</h4>
+                            <div class="ai-response" id="aiResponseText"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Files Tab -->
+                <div id="files" class="tab-content">
+                    <div class="file-grid">
+                        <div class="file-item">
+                            <div class="file-icon">📊</div>
+                            <div class="file-name">Q4_Report.pdf</div>
+                            <div class="file-size">2.3 MB</div>
+                            <button class="file-btn" onclick="downloadFile('Q4_Report.pdf')">Download</button>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon">📋</div>
+                            <div class="file-name">Meeting_Notes.docx</div>
+                            <div class="file-size">156 KB</div>
+                            <button class="file-btn" onclick="downloadFile('Meeting_Notes.docx')">Download</button>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon">📈</div>
+                            <div class="file-name">Analytics.xlsx</div>
+                            <div class="file-size">892 KB</div>
+                            <button class="file-btn" onclick="downloadFile('Analytics.xlsx')">Download</button>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon">🎨</div>
+                            <div class="file-name">Design_Mockup.png</div>
+                            <div class="file-size">1.2 MB</div>
+                            <button class="file-btn" onclick="downloadFile('Design_Mockup.png')">Download</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Tab -->
+                <div id="analytics" class="tab-content">
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-title">📊 Website Traffic</div>
+                            <div class="stat-number" id="traffic">45,678</div>
+                            <div class="stat-label">Unieke bezoekers deze maand</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">📱 Mobile Usage</div>
+                            <div class="stat-number">68%</div>
+                            <div class="stat-label">Van alle bezoekers</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">⏱️ Avg. Session</div>
+                            <div class="stat-number">4m 32s</div>
+                            <div class="stat-label">Gemiddelde sessie tijd</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">🔄 Bounce Rate</div>
+                            <div class="stat-number">23%</div>
+                            <div class="stat-label">Lager dan industrie</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chatMessages = [];
+        let messageCount = 0;
+        let callStartTime = null;
+        let callTimer = null;
+        
+        const aiResponses = [
+            "📊 Gebaseerd op jouw data: Je conversie is 23% gestegen! Dit komt door de optimalisatie van je landing page.",
+            "💡 Suggestie: Investeer meer in video marketing. Dit geeft 3x beter engagement.",
+            "✨ Interessant: Je team is 40% productiever met deze tool!",
+            "🎯 Analyse: Je klanten zijn het meest tevreden op vrijdagen.",
+            "📈 Forecast: Volgende kwartaal verwacht ik 15% groei.",
+            "💰 Financial insight: Je CAC is 30% gedaald, LTV gestegen met 25%.",
+            "🚀 Growth opportunity: Implementeer referral program, verwacht 20% meer klanten.",
+            "📱 Mobile first: 68% van je traffic is mobiel, optimaliseer daarop.",
+        ];
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+            
+            const titles = {
+                'dashboard': '📊 Dashboard',
+                'chat': '💬 Team Chat',
+                'calls': '📞 Video Calls',
+                'ai': '🤖 AI Assistant',
+                'files': '📎 File Sharing',
+                'analytics': '📈 Analytics'
+            };
+            document.getElementById('headerTitle').textContent = titles[tab];
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (text) {
+                const messagesDiv = document.getElementById('messages');
+                const time = new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'});
+                
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message user';
+                messageEl.innerHTML = text + '<br><span class="message-time">' + time + '</span>';
+                messagesDiv.appendChild(messageEl);
+                
+                messageCount++;
+                document.getElementById('msgcount').textContent = (1234 + messageCount).toLocaleString();
+                
+                input.value = '';
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                
+                setTimeout(() => {
+                    const responseEl = document.createElement('div');
+                    responseEl.className = 'message ai';
+                    responseEl.innerHTML = '✅ Bericht ontvangen!<br><span class="message-time">' + new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'}) + '</span>';
+                    messagesDiv.appendChild(responseEl);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }, 800);
+            }
+        }
+
+        function askAI() {
+            const input = document.getElementById('aiInput').value.trim();
+            if (input) {
+                const response = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+                document.getElementById('aiResponseText').textContent = response;
+                document.getElementById('aiResponse').style.display = 'block';
+                document.getElementById('aiInput').value = '';
+            }
+        }
+
+        function startCall(type) {
+            document.getElementById('callStatus').style.display = 'block';
+            document.getElementById('callInfo').textContent = type + ' call is actief. Gebruik je microfoon en camera.';
+            callStartTime = new Date();
+            
+            // Start call timer
+            callTimer = setInterval(() => {
+                if (callStartTime) {
+                    const now = new Date();
+                    const diff = Math.floor((now.getTime() - callStartTime.getTime()) / 1000);
+                    const minutes = Math.floor(diff / 60);
+                    const seconds = diff % 60;
+                    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    document.getElementById('callInfo').textContent = 
+                        type + ' call is actief. Gebruik je microfoon en camera. (' + timeStr + ')';
+                }
+            }, 1000);
+        }
+
+        function endCall() {
+            document.getElementById('callStatus').style.display = 'none';
+            if (callTimer) {
+                clearInterval(callTimer);
+                callTimer = null;
+            }
+            callStartTime = null;
+            alert('Call beëindigd. Bedankt!');
+        }
+
+        function downloadFile(name) {
+            // Create a simple download simulation
+            const link = document.createElement('a');
+            link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent('Dit is een demo bestand: ' + name);
+            link.download = name;
+            link.click();
+        }
+
+        // Live stats update
+        setInterval(() => {
+            const revenue = parseInt(document.getElementById('revenue').textContent.replace(/[€,]/g, ''));
+            document.getElementById('revenue').textContent = '€' + (revenue + Math.floor(Math.random() * 200)).toLocaleString();
+            
+            const users = parseInt(document.getElementById('users').textContent.replace(/,/g, ''));
+            document.getElementById('users').textContent = (users + Math.floor(Math.random() * 10)).toLocaleString();
+            
+            const traffic = parseInt(document.getElementById('traffic').textContent.replace(/,/g, ''));
+            document.getElementById('traffic').textContent = (traffic + Math.floor(Math.random() * 50)).toLocaleString();
+        }, 3000);
+
+        // Activity updates
+        const activities = [
+            '• Nieuw contract: €50,000 van TechCorp',
+            '• Team call voltooid: Q4 Planning sesie',
+            '• 25 nieuwe leads deze week',
+            '• Product update live: v2.1.3',
+            '• 3 klanten meerderjarig bereikt',
+            '• Marketing campagne gestart',
+            '• Nieuwe klant onboarded',
+            '• Systeem backup voltooid'
+        ];
+
+        setInterval(() => {
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            let html = '<p>' + activity + '</p>';
+            // Show 4 random activities
+            const shuffled = [...activities].sort(() => 0.5 - Math.random());
+            shuffled.slice(0, 4).forEach(a => {
+                if (a !== activity) html += '<p>' + a + '</p>';
+            });
+            document.getElementById('activity').innerHTML = html;
+        }, 5000);
+
+        // Initialize with some activity
+        setTimeout(() => {
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            document.getElementById('activity').innerHTML = '<p>' + activity + '</p>';
+        }, 1000);
+    </script>
+</body>
+</html>
